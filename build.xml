@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PathFinder" basedir="." default="all">
+
+	<!-- Constants -->
+	<property name="project.name" value="PathFinder" />
+	<property name="java.src.dir" value="${basedir}/src/java" />
+	<property name="tests.output.dir" value="${basedir}/tests" />
+	<property name="classes.dir" value="${basedir}/classes" />
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="lib.dir" value="${dist.dir}" />
+
+	<path id="project.classpath">
+		<pathelement location="${classes.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="run-test">
+		<java classname="pathfinding.MyUsage" fork="true" dir="${dist.dir}">
+			<arg value="test_map.txt" />
+			<classpath refid="project.classpath" />
+		</java>
+	</target>
+
+	<taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+		<classpath>
+			<fileset dir="${dist.dir}">
+				<include name="**/*.junit.jar" />
+			</fileset>
+		</classpath>
+	</taskdef>
+
+	<target name="clean" description="Clean output dirs, both build and deployment.">
+		<delete>
+			<fileset dir="${dist.dir}">
+				<include name="${project.name}.jar" />
+			</fileset>
+		</delete>
+		<delete dir="${classes.dir}"/>
+		<delete dir="${tests.output.dir}"/>
+	</target>
+
+	<target name="prepare" description="Responsible for performing the necessary preparation before compiliation can start.">
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${classes.dir}" />
+		<mkdir dir="${tests.output.dir}" />
+	</target>
+
+	<target name="run-full-regression-test">
+		<junit printsummary="on" haltonfailure="no" haltonerror="no" fork="yes" timeout="360000" forkmode="once" dir="${basedir}">
+			<formatter type="xml" />
+			<classpath>
+				<path refid="project.classpath" />
+			</classpath>
+			<batchtest fork="yes" todir="${tests.output.dir}">
+				<fileset dir="${java.src.dir}">
+					<include name="**/**/*Test.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="compile" description="Compile main source tree java files into class files" depends="prepare">
+		<javac srcdir="${java.src.dir}" destdir="${classes.dir}" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}">
+			<classpath refid="project.classpath" />
+		</javac>
+	</target>
+
+	<target name="build" description="" depends="compile">
+		<jar destfile="${dist.dir}/${project.name}.jar" basedir="${classes.dir}" />
+	</target>
+
+	<target name="all" depends="clean,build,run-full-regression-test" description="Clean, build and create JAR" />
+
+	<target name="run-unit-test">
+		<junit printsummary="yes" haltonfailure="no" maxmemory="1024m" timeout="60000" haltonerror="no" fork="on" forkmode="perBatch" dir="${basedir}">
+			<formatter type="xml" />
+			<classpath>
+				<path refid="project.classpath" />
+			</classpath>
+			<test name="za.co.truebill.batch.notification.tests.SMSNotificationSenderTestCase" fork="true" todir="${tests.output.dir}" />
+		</junit>
+	</target>
+</project>
