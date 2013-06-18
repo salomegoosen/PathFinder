@@ -170,7 +170,10 @@ public class MyMap {
     }  catch (Exception ex) {
     	throw ex;
     } finally {
-    	writer.close();
+    	try {
+    		writer.close();
+    	} catch (Exception ex) {
+    	}
     }
         return solution;
     }
