@@ -9,6 +9,7 @@ ant run-full-regression-test
 
 2) Runtime Pre-requisites:
 JAVA_HOME must be set
+*Compatible with JDK1.2 
 
 
 3) CONFIGURATION:
@@ -21,3 +22,5 @@ See example property file, terrain.properties, in dist/config folder.
 or	.\run.sh <mapName> on unix
 
 eg .\run.bat large_map.txt
+
+*for obvious reasons(Multichoice compatibility :-)), thus I did not use the List<T> functionality of newer JDK's
