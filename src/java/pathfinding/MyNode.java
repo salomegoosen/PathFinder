@@ -17,11 +17,11 @@ public class MyNode extends AbstractNode {
         }
 
         /* (non-Javadoc)
-         * @see pathfinding.AbstractNode#setFuturePathCosts(pathfinding.AbstractNode, int)
+         * @see pathfinding.AbstractNode#setFuturePathCosts(pathfinding.AbstractNode)
          */
-        public void setFuturePathCosts(AbstractNode endNode, int weightForSymbol) {
+        public void setFuturePathCosts(AbstractNode endNode) {
             this.setFuturePathCosts((Math.abs(this.getxPosition() - endNode.getxPosition())
-                    + Math.abs(this.getyPosition() - endNode.getyPosition()))+weightForSymbol);
+                    + Math.abs(this.getyPosition() - endNode.getyPosition())));
         }
 
 }

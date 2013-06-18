@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 public class PropertyHelper {
 	public static final String PROPERTY_NAME_START_NODE_SYMBOL = "StartNodeSymbol";
 	public static final String PROPERTY_NAME_GOAL_NODE_SYMBOL = "GoalNodeSymbol";
@@ -39,6 +41,7 @@ public class PropertyHelper {
 
 	private static PropertyHelper instance;  // singleton instance to manage the properties
 
+	public static Logger LOGGER = Logger.getLogger(PropertyHelper.class);
 	/*
 	 * 
 	 */
@@ -71,7 +74,7 @@ public class PropertyHelper {
 			if (!file.exists())
 				throw new Exception("Could not find file " + file.getAbsolutePath()+"]");
 
-			System.out.println("Found file - loading properties from "
+			LOGGER.info("Found file - loading properties from "
 					+ file.getAbsolutePath());
 			properties.load(new FileInputStream(file));
 			loadStartNodeSymbol();
@@ -97,20 +100,21 @@ public class PropertyHelper {
 		return resourcesPathName;
 	}
 	
-	public static char getStartNodeSymbol() {
+	public final char getStartNodeSymbol() {
 		return startNodeSymbol;
 	}
 
-	public static char getGoalNodeSymbol() {
+	public final char getGoalNodeSymbol() {
 		return goalNodeSymbol;
 	}
 
-	public static char getNotWalkableSymbol() {
+	public final char getNotWalkableSymbol() {
 		return notWalkableSymbol;
 	}
 
 	/*
 	 * read configured weight for symbol
+	 * TODO - cache symbol and their weights in memory in a Set
 	 */
 	public int weightForSymbol(char terrainSymbol)
 			throws UndefinedPropertyException {

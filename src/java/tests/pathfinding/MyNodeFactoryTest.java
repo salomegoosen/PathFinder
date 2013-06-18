@@ -2,12 +2,11 @@ package tests.pathfinding;
 
 import java.util.ArrayList;
 
-import pathfinding.AbstractNode;
-import pathfinding.MyAStarPathFinderAlgorithm;
-import pathfinding.MyNodeFactory;
-import pathfinding.MyMap;
-import pathfinding.NodeFactory;
 import junit.framework.TestCase;
+import pathfinding.AbstractNode;
+import pathfinding.MyMap;
+import pathfinding.MyNodeFactory;
+import pathfinding.NodeFactory;
 
 public class MyNodeFactoryTest extends TestCase {
 
@@ -15,7 +14,7 @@ public class MyNodeFactoryTest extends TestCase {
 		MyMap map;
 		try {
 			NodeFactory nodeFactory = new MyNodeFactory();
-			map = new MyMap(nodeFactory, new MyAStarPathFinderAlgorithm());
+			map = new MyMap(nodeFactory);
 			AbstractNode startNode = nodeFactory.createNode(0,0,'0');
 			map.setNode(startNode);
 			AbstractNode nextNode = nodeFactory.createNode(0,1,'1');
@@ -35,7 +34,7 @@ public class MyNodeFactoryTest extends TestCase {
 		MyMap map;
 		try {
 			NodeFactory nodeFactory = new MyNodeFactory();
-			map = new MyMap(nodeFactory, new MyAStarPathFinderAlgorithm());
+			map = new MyMap(nodeFactory);
 			AbstractNode startNode = nodeFactory.createNode(0,0,'@');
 			map.setNode(startNode);
 			assertTrue(map.getNodes().size() > 0);

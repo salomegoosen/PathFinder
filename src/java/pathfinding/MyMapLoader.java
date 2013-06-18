@@ -9,8 +9,8 @@ public class MyMapLoader {
 	 * 
 	 * Constructor
 	 */
-	public MyMapLoader(NodeFactory nodeFactory, AbstractAlgorithm algorithm) throws Exception {
-		mapFactory = new MapFactory(nodeFactory, algorithm);		
+	public MyMapLoader(NodeFactory nodeFactory) throws Exception {
+		mapFactory = new MapFactory(nodeFactory);		
 	}
 	
 	/**

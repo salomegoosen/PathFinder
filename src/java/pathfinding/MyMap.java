@@ -1,21 +1,12 @@
-/*
- * // TODO
- * possible optimizations:
- * - calculate f as soon as g or h are set, so it will not have to be
- *      calculated each time it is retrieved
- * - store nodes in openList sorted by their f value.
- */
-
 package pathfinding;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
+import org.apache.log4j.Logger;
 
 /**
  * This class represents a simple terrain map.
@@ -38,14 +29,14 @@ import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
  * @param 
  */
 public class MyMap {
-
     /** keeps the nodes in a 2D ArrayList */
     private ArrayList nodes;
 	private PropertyHelper propertyHelper;
 	protected NodeFactory nodeFactory;
 	private AbstractNode startNode;
 	private AbstractNode goalNode;
-	private AbstractAlgorithm algorithm;
+	
+	public static Logger LOGGER = Logger.getLogger(MyMap.class);
 	
     /**
      * constructs a terrain map
@@ -55,30 +46,14 @@ public class MyMap {
      * @param nodeFactory 
      * @throws Exception 
      */
-    public MyMap(NodeFactory nodeFactory, AbstractAlgorithm algorithm) throws Exception {
+    public MyMap(NodeFactory nodeFactory) throws Exception {
         this.nodeFactory = nodeFactory;        
-        this.algorithm = algorithm;
         nodes = new ArrayList(); 
         propertyHelper = PropertyHelper.getInstance();
         startNode = null;
         goalNode = null;
     }
 
-
-    /**
-     * sets nodes walkable field at given coordinates to given value.
-     * <p>
-     * x/y must be bigger or equal to 0 and smaller or equal to width/hight.
-     *
-     * @param x
-     * @param y
-     * @param bool
-     */
-    public void setWalkable(int x, int y, boolean bool) {
-        // TODO check parameter.
-        getNode(x, y).setWalkable(bool);
-    }
-    
     public ArrayList getNodes() {
 		return nodes;
 	}
@@ -100,7 +75,7 @@ public class MyMap {
 		ArrayList nodeRowI = null;
 		AbstractNode nodeAtxy = null;
 		nodeRowI = getRowAt(x);
-		if (y < nodeRowI.size())
+		if (validXY(x,y))
 			nodeAtxy = (AbstractNode) nodeRowI.get(y);
 		return nodeAtxy;
 	}
@@ -119,8 +94,8 @@ public class MyMap {
 	public void setNode(AbstractNode nodeToAdd) throws Exception {
 		int rowNum = nodeToAdd.getxPosition();
 		int columnNum = nodeToAdd.getyPosition();
-		char startNodeSymbol = PropertyHelper.getStartNodeSymbol();
-		char goalNodeSymbol = PropertyHelper.getGoalNodeSymbol();
+		char startNodeSymbol = propertyHelper.getStartNodeSymbol();
+		char goalNodeSymbol = propertyHelper.getGoalNodeSymbol();
 		
 		// check for startNode uniqueness
 		if (nodeToAdd.getTerrainSymbol() == startNodeSymbol)
@@ -163,16 +138,83 @@ public class MyMap {
 
 
 	/**
-     * prints map
+     * prints solution to file <mapName>+solution.txt
      * <p>
-     * shows solution path as "#".
-     * 
+     * @param mapName
+     * @return 2D solution char array
+     * @throws Exception
      */
-	// TODO Override to print solution to file
-    public void drawMap(String mapName) {
-    	String outputFileName = mapName+"solution.txt";
-		//FileOutputStream fileWriter = new FileOutputStream(file );
-		System.out.println("To print to output file "+outputFileName);
+    public char[][] writeSolutionMapToFile(String mapName) throws Exception  {
+    	String outputFileName = mapName.replaceAll(".txt", "_")+"solution.txt";
+    	BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outputFileName)));
+    	char[][] solution = new char[getNumRows()][getNumColumns()];
+		try {
+    	LOGGER.info("To print to output file "+outputFileName);
+    	System.out.println("SOLUTION MAP:");
+        for (int i = 0; i < getNumRows(); i++) {
+        	String lineToLog = new String();
+            for (int j = 0; j < getNumColumns(); j++) {
+                AbstractNode node = getNode(i,j);
+                if (node == null)  // don't break if inconsistency in map data
+                	solution[i][j] =' ';
+                else
+                	solution[i][j] = node.getTerrainSymbol();
+                writer.write(solution[i][j]);
+                lineToLog += solution[i][j];
+            }
+            System.out.println(lineToLog);
+            LOGGER.info(lineToLog);
+            writer.newLine();
+        }
+        System.out.println("Solution file created: "+outputFileName);
+    }  catch (Exception ex) {
+    	throw ex;
+    } finally {
+    	writer.close();
+    }
+        return solution;
+    }
+
+    public int getNumRows() {
+		return nodes.size();
+	}
+    
+    public int getNumColumns() {
+		return ((ArrayList)nodes.get(0)).size();
+	}
+
+	public void plotSolutionOnMap(List solution) {
+		LOGGER.info("SOLUTION: "+solution.size());
+		for (int i = 0; i < solution.size(); i++) {
+			MyNode node = (MyNode) (solution.get(i));
+			MyNode nodeOnMap = (MyNode) getNode(node.getxPosition(), node.getyPosition());
+			nodeOnMap.setTerrainSymbol(PropertyHelper.PATH_SYMBOL);
+			LOGGER.info("(" + (node.getxPosition()) + ", "
+					+ node.getyPosition() + ") ");
+		}
+	}
+
+	public int weightForSymbol(char terrainSymbol) throws UndefinedPropertyException {
+		return propertyHelper.weightForSymbol(terrainSymbol);
+	}
+
+	public boolean validXY(int x, int y) {
+		ArrayList rowX= (ArrayList) nodes.get(x);
+		return ((x >= 0 && x < getNumRows()) && 
+				(y >= 0 && y < rowX.size()));
+	}
+
+	public AbstractNode getStartNode() {
+		return startNode;
+	}
+
+
+	public AbstractNode getGoalNode() {
+		return goalNode;
+	}
+
+    public void drawMapToStdOut() {
+    	System.out.println("*****MAP:");
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = 0; j < nodes.size(); j++) {
                 AbstractNode node = getNode(i,j);
@@ -186,248 +228,10 @@ public class MyMap {
     }
 
     /**
-     * prints something to sto.
+     * prints to stdout.
      */
     private void print(char c) {
         System.out.print(c);
     }
 
-
-    /* Variables and methodes for path finding */
-
-
-    // variables needed for path finding
-
-    /** list of type AbstractNode objects
-     * containing nodes not yet visited but adjacent to visited nodes. */
-    private List openList; // list of type Node objects
-    /** list containing nodes already visited/taken care of. */
-    private List closedList;  // list of type Node objects
-    private List solution;
-
-    /**
-     * finds an allowed path from start to goal coordinates on this map.
-     * <p>
-     * This method uses the A* algorithm. The hCosts value is calculated in
-     * the given Node implementation.
-     * <p>
-     * This method will return a LinkedList containing the start node at the
-     * beginning followed by the calculated shortest allowed path ending
-     * with the end node.
-     * <p>
-     * If no allowed path exists, an empty list will be returned.
-     * <p>
-     * <p>
-     * x/y must be bigger or equal to 0 and smaller or equal to width/hight.
-     *
-     * @param oldX
-     * @param oldY
-     * @param newX
-     * @param newY
-     * @return list of type node
-     * @throws Exception 
-     */
-    public final List findPath(int oldX, int oldY, int newX, int newY) throws Exception {
-        if (!validXY(oldX, oldY))
-    		throw new Exception("Invalid FROM path coordinates");
-    	if (!validXY(newX, newY))
-    		throw new Exception("Invalid TO path coordinates");
-    	AbstractNode goalNode = getNode(newX,newY); // goal node
-        openList = new LinkedList();
-        closedList = new LinkedList();
-        openList.add(getNode(oldX,oldY)); // add starting node to open list
-
-        AbstractNode current;
-        while (!openList.isEmpty()) {
-            current = lowestCostNodeInOpenList(); // get node with lowest costs from openList
-            closedList.add(current); // add current node to closed list
-            openList.remove(current); // delete current node from open list
-            if ((current.getxPosition() == newX)
-                    && (current.getyPosition() == newY)) { // found goal
-                solution = calcPath(getNode(oldX,oldY), current);
-                return solution;
-            }
-            // for all adjacent nodes:
-            List adjacentNodes = getAdjacent(current);
-            for (int i = 0; i < adjacentNodes.size(); i++) {
-                AbstractNode currentAdj = (AbstractNode) adjacentNodes.get(i);
-                int weightForNode = propertyHelper.weightForSymbol(currentAdj.getTerrainSymbol());
-                if (weightForNode < 0) 
-                	currentAdj.setWalkable(false);               
-                if (currentAdj.isWalkable()) {
-                	if (!openList.contains(currentAdj)) { // node is not in openList
-                		currentAdj.setPrevious(current); // set current node as previous for this node
-                		currentAdj.setFuturePathCosts(goalNode, 0 ); // set estimated costs to goal for this node
-                		currentAdj.setPastPathCosts(current, weightForNode); // set costs from start to this node
-                			openList.add(currentAdj); // add node to openList
-                	} else { // node is in openList
-                		if (currentAdj.getPastPathCosts() > currentAdj.calculatePastPathCosts(current)) { // costs from current node are cheaper than previous costs
-                			currentAdj.setPrevious(current); // set current node as previous for this node
-                			currentAdj.setPastPathCosts(current, weightForNode); // set costs from start to this node
-                		}
-                	}
-                }
-            }
-
-            if (openList.isEmpty()) { // no path exists
-                return new LinkedList(); // return empty list
-            }
-        }
-        return null; // unreachable
-    }
-
-    private boolean validXY(int x, int y) {
-		return (x >= 0 && y < nodes.size());
-	}
-
-
-	/**
-     * calculates the found path between two points according to
-     * their given <code>previousNode</code> field.
-     *
-     * @param start
-     * @param goal
-     * @return
-     */
-    private List calcPath(AbstractNode start, AbstractNode goal) {
-     // TODO if invalid nodes are given (eg cannot find from
-     // goal to start, this method will result in an infinite loop!)
-        LinkedList path = new LinkedList();
-
-        AbstractNode curr = goal;
-        boolean done = false;
-        while (!done) {
-            path.addFirst(curr);
-            curr = curr.getPrevious();
-
-            if (curr.equals(start)) {
-            	path.addFirst(start);
-                done = true;
-            }
-        }
-        return path;
-    }
-
-    /**
-     * returns the node with the lowest costs.
-     *
-     * @return
-     */
-    private AbstractNode lowestCostNodeInOpenList() {
-        // TODO currently, this is done by going through the whole openList!
-    	AbstractNode cheapest = (AbstractNode) openList.get(0);
-        for (int i = 0; i < openList.size(); i++) {
-            if (((AbstractNode) openList.get(i)).getPastPlusFutureCosts() < cheapest.getPastPlusFutureCosts()) {
-                cheapest = (AbstractNode) openList.get(i);
-            }
-        }
-        return cheapest;
-    }
-
-    /**
-     * returns a LinkedList with nodes adjacent to the given node.
-     * if those exist, are walkable and are not already in the closedList!
-     */
-    private List getAdjacent(AbstractNode node) {
-        // TODO make loop
-        int x = node.getxPosition();
-        int y = node.getyPosition();
-        List adj = new LinkedList();
-
-        AbstractNode temp;
-        if (x > 0) {
-            temp = this.getNode((x - 1), y);
-            if (temp.isWalkable() && !closedList.contains(temp)) {
-               // temp.setIsDiagonaly(false);
-                adj.add(temp);
-            }
-        }
-
-        if (x+1 < nodes.size()) {
-            temp = this.getNode((x + 1), y);
-            System.out.println(temp.toString());
-            if (temp.isWalkable() && !closedList.contains(temp)) {
-               // temp.setIsDiagonaly(false);
-                adj.add(temp);
-            }
-        }
-
-        if (y > 0) {
-            temp = this.getNode(x, (y - 1));
-            if (temp.isWalkable() && !closedList.contains(temp)) {
-                //temp.setIsDiagonaly(false);
-                adj.add(temp);
-            }
-        }
-
-        if (y+1 < nodes.size()) {
-            temp = this.getNode(x, (y + 1));
-            if (temp.isWalkable() && !closedList.contains(temp)) {
-                //temp.setIsDiagonaly(false);
-                adj.add(temp);
-            }
-        }
-
-
-        // add nodes that are diagonaly adjacent too:
-        if (x+1 < nodes.size() && y+1 < nodes.size()) {
-            temp = this.getNode((x + 1), (y + 1));
-            if (temp.isWalkable() && !closedList.contains(temp)) {
-               // temp.setIsDiagonaly(true);
-                adj.add(temp);
-            }
-        }
-
-            if (x > 0 && y > 0) {
-                temp = this.getNode((x - 1), (y - 1));
-                if (temp.isWalkable() && !closedList.contains(temp)) {
-                   // temp.setIsDiagonaly(true);
-                    adj.add(temp);
-                }
-            }
-
-            if (x > 0 && y+1 < nodes.size()) {
-                temp = this.getNode((x - 1), (y + 1));
-                if (temp.isWalkable() && !closedList.contains(temp)) {
-                   // temp.setIsDiagonaly(true);
-                    adj.add(temp);
-                }
-            }
-
-            if (x+1 < nodes.size() && y > 0) {
-                temp = this.getNode((x + 1), (y - 1));
-                if (temp.isWalkable() && !closedList.contains(temp)) {
-                    //temp.setIsDiagonaly(true);
-                    adj.add(temp);
-                }
-            }
-        
-        return adj;
-    }
-    
-   /* public static void printList(List listToPrint) {
-		for (int i = 0; i < listToPrint.size(); i++) 
-			System.out.println(((MyNode)listToPrint.get(i)).toString());
-		System.out.println();
-	}*/
-
-	public List findPathToGoal() throws Exception {
-		int oldX = startNode.getxPosition();
-		int oldY = startNode.getyPosition();
-		int newX = goalNode.getxPosition();
-		int newY = goalNode.getyPosition();
-		solution = findPath(oldX, oldY, newX, newY);
-		return solution;
-	}
-
-
-	public void plotSolutionOnMap() {
-		System.out.println("SOLUTION: "+solution.size());
-		for (int i = 0; i < solution.size(); i++) {
-			MyNode node = (MyNode) (solution.get(i));
-			node.setTerrainSymbol(PropertyHelper.PATH_SYMBOL);
-			System.out.print("(" + (node.getxPosition()) + ", "
-					+ node.getyPosition() + ") ");
-		}
-	}
 }

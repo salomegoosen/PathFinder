@@ -1,5 +1,7 @@
 package pathfinding;
 
+import java.util.List;
+
 /**
  * Example usage of this package.
  * 
@@ -21,20 +23,21 @@ public class MyUsage {
 		String mapName = args[0];
 		MyMap myMap;
 		try {
-			MyMapLoader mapLoader = new MyMapLoader(new MyNodeFactory(), new MyAStarPathFinderAlgorithm());
-			
+			MyMapLoader mapLoader = new MyMapLoader(new MyNodeFactory());
 			// load map from file
 			myMap = mapLoader.load(mapName);
 			// draw terrain before solution
-			myMap.drawMap(mapName);
-			// find solution
-			myMap.findPathToGoal(); //(0, 0, 49, 49);
-
-			// plot solution path on terrain map
-			myMap.plotSolutionOnMap();
+			myMap.drawMapToStdOut();
 			
+			MyAStarPathFinderAlgorithm pathFinderAlgorithm = new MyAStarPathFinderAlgorithm(myMap);
+			// find solution
+			List solution = pathFinderAlgorithm.findPathToGoal(); 
+			
+			// plot solution path on terrain map
+			myMap.plotSolutionOnMap(solution);
+				
 			// print terrain map with solution
-			myMap.drawMap(mapName);
+			myMap.writeSolutionMapToFile(mapName);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

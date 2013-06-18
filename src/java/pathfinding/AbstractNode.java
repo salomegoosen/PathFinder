@@ -1,20 +1,3 @@
-/*    
-    Copyright (C) 2012 http://software-talk.org/ (developer@software-talk.org)
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 package pathfinding;
 
 /**
@@ -65,6 +48,7 @@ public abstract class AbstractNode {
 
     /** estimated costs to get from this AbstractNode to end AbstractNode. */
     private int futurePathCosts;
+	private int weight;
 
     /**
      * constructs a walkable AbstractNode with given coordinates.
@@ -178,13 +162,19 @@ public abstract class AbstractNode {
      * from it to this AbstractNode.
      *
      * @param previousAbstractNode
-     * @param terrainWeight
      */
-    public void setPastPathCosts(AbstractNode previousAbstractNode, int terrainWeight) {
-        setPastPathCosts(previousAbstractNode.getPastPathCosts() + terrainWeight);
+    public void setPastPathCosts(AbstractNode previousAbstractNode) {
+        setPastPathCosts(previousAbstractNode.getPastPathCosts() + previousAbstractNode.getWeight());
     }
 
-    /**
+    /*
+     * returns the weight as calculated on loading from terrainSymbol
+     */
+    private int getWeight() {
+		return weight;
+	}
+
+	/**
      * calculates - but does not set - path past costs.
      * <p>
      * 
@@ -232,7 +222,7 @@ public abstract class AbstractNode {
      *
      * @param endAbstractNode
      */
-    public abstract void setFuturePathCosts(AbstractNode endAbstractNode, int weightForSymbol);
+    public abstract void setFuturePathCosts(AbstractNode endAbstractNode);
 
     /**
      * returns a String containing the coordinates, as well as past, future 
@@ -241,8 +231,9 @@ public abstract class AbstractNode {
      * @return
      */
     public String toString() {
-        return getTerrainSymbol()+" (" + getxPosition() + ", " + getyPosition() + "): futurePathCost: "
-                + getFuturePathCosts() + " pastPathCost: " + getPastPathCosts();
+        return getTerrainSymbol()+" (" + getxPosition() + ", " + getyPosition() + "): " + getPastPlusFutureCosts();
+        		//"futurePathCost: "
+               // + getFuturePathCosts() + " pastPathCost: " + getPastPathCosts();
     }
 
     /**
@@ -284,6 +275,11 @@ public abstract class AbstractNode {
 			AbstractNode nodeToAdd) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public void setWeightForSymbol(int weightForSymbol) {
+		this.weight = weightForSymbol;
+		setWalkable(weight >= 0);
 	}
 
 }
