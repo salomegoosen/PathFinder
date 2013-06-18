@@ -245,4 +245,11 @@ public class MyAStarPathFinderAlgorithm extends AbstractAlgorithm {
 		List solution = findPath(oldX, oldY, newX, newY);
 		return solution;
 	}
+	
+	public void finalize() {
+		System.out.println("Finalize class MyAStarPAthFinderAlgorithm");
+		openList = null;
+		closedList = null;
+		terrainMap = null;
+	}
 }

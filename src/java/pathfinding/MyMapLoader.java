@@ -24,4 +24,7 @@ public class MyMapLoader {
 		return mapFactory.createMap(mapFileName.trim());
 	}
 	
+	public void finalize() {
+		mapFactory = null;
+	}
 }

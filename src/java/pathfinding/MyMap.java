@@ -236,5 +236,10 @@ public class MyMap {
     private void print(char c) {
         System.out.print(c);
     }
+    
+    public void finalize() {
+    	nodes = null;
+    	propertyHelper = null;
+    }
 
 }

@@ -32,6 +32,7 @@ public class MyUsage {
 			MyAStarPathFinderAlgorithm pathFinderAlgorithm = new MyAStarPathFinderAlgorithm(myMap);
 			// find solution
 			List solution = pathFinderAlgorithm.findPathToGoal(); 
+			pathFinderAlgorithm = null;
 			
 			// plot solution path on terrain map
 			myMap.plotSolutionOnMap(solution);
@@ -39,9 +40,14 @@ public class MyUsage {
 			// print terrain map with solution
 			myMap.writeSolutionMapToFile(mapName);
 
+			mapLoader = null;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			myMap = null;
+			
+			
 		}
 	}
 
