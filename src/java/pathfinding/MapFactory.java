@@ -60,6 +60,10 @@ public class MapFactory {
 			line = reader.nextLine();
 			x++;
 		} // row
+		try {
+			reader.close();
+		} catch (Exception e) {
+		}
 		return map;
 	}
 
